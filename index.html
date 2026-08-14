@@ -70,6 +70,7 @@
   .icon-btn{background:transparent;border:1px solid var(--border);color:var(--ink-muted);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;transition:border-color .15s ease, color .15s ease;}
   .icon-btn:hover{border-color:var(--accent);color:var(--accent);}
   .linklike{background:none;border:none;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer;font-family:inherit;font-size:inherit;}
+  .linklike-danger{color:var(--danger);}
 
   /* hero */
   .hero-ticket{margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-l);overflow:hidden;box-shadow:var(--shadow-soft);animation:fadeInUp .7s .08s ease both;}
@@ -107,6 +108,10 @@
   .word-count{font-family:var(--font-mono);font-size:12px;color:var(--ink-muted);margin:6px 2px 0;text-align:right;}
   .word-count.is-good{color:var(--accent);}
   .word-count.is-bad{color:var(--danger);}
+  .checkbox-field{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .checkbox-field input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex:0 0 auto;}
+  .checkbox-field label{font-family:var(--font-body);font-size:14px;color:var(--ink);cursor:pointer;margin:0;text-transform:none;letter-spacing:0;}
+  .host-tag{color:var(--accent);font-weight:600;}
 
   /* suggestions list */
   .suggestions{margin-top:24px;}
@@ -295,7 +300,7 @@
     movies: [],
     nextScreening: null,
     history: [],
-    profile: { name: '', votedIds: [], isOrganizer: false }
+    profile: { name: '', votedIds: [], isOrganizer: false, mySubmittedIds: [] }
   };
 
   var memoryFallback = {};
@@ -306,6 +311,10 @@
   // as unavailable and fall back to the in-memory store instead of
   // leaving the UI stuck waiting forever.
   var STORAGE_TIMEOUT_MS = 2500;
+  // Apps Script has real invocation overhead (cold starts, a redirect
+  // hop through googleusercontent.com) that Claude's own storage doesn't,
+  // so backend calls get a longer leash before being treated as failed.
+  var BACKEND_TIMEOUT_MS = 8000;
   function withTimeout(promise, ms){
     return new Promise(function(resolve, reject){
       var settled = false;
@@ -326,7 +335,15 @@
   // as a web app, paste its /exec URL below. That's what makes storage
   // work when this file is hosted somewhere outside Claude, e.g. GitHub
   // Pages, since window.storage only exists inside Claude's own runtime.
-  var BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyPkbNCAelmgCbiD4PWzRYKZp-ygaibOPoPY7UmV5KWAzibnsdaCEjZGPBVgCmzyivV/exec';
+  var BACKEND_URL_RAW = '';
+  // If the URL above is missing its scheme (e.g. pasted without the
+  // leading "https://"), fetch() silently treats it as a path relative
+  // to whatever site is hosting this file, which fails in a confusing
+  // way (404s against your own GitHub Pages site instead of ever
+  // reaching Google). This guards against that specific mistake.
+  var BACKEND_URL = BACKEND_URL_RAW && !/^https?:\/\//i.test(BACKEND_URL_RAW)
+    ? 'https://' + BACKEND_URL_RAW
+    : BACKEND_URL_RAW;
 
   function getVisitorId(){
     try{
@@ -382,7 +399,7 @@
     }catch(e){ /* key not found, storage unavailable, or timed out, fall through */ }
     if(BACKEND_URL){
       try{
-        return await withTimeout(backendGet(key, shared), STORAGE_TIMEOUT_MS);
+        return await withTimeout(backendGet(key, shared), BACKEND_TIMEOUT_MS);
       }catch(e){ console.error('backend get failed', key, e); }
     }
     var fbKey = (shared ? 'shared:' : 'priv:') + key;
@@ -398,7 +415,7 @@
     }catch(e){ console.error('storage set failed or timed out', key, e); }
     if(BACKEND_URL){
       try{
-        var ok = await withTimeout(backendSet(key, value, shared), STORAGE_TIMEOUT_MS);
+        var ok = await withTimeout(backendSet(key, value, shared), BACKEND_TIMEOUT_MS);
         if(ok) return true;
       }catch(e){ console.error('backend set failed', key, e); }
     }
@@ -537,11 +554,13 @@
           '</button>' +
           '<div class="movie-body">' +
             '<h3 class="movie-title">' + escapeHtml(m.title) + yearHtml + '</h3>' +
-            '<p class="movie-meta">Suggested by ' + escapeHtml(m.submittedBy) + (m.preferredDates ? ' \u00b7 Prefers ' + escapeHtml(m.preferredDates) : '') + '</p>' +
+            '<p class="movie-meta">Suggested by ' + escapeHtml(m.submittedBy) + (m.preferredDates ? ' \u00b7 Prefers ' + escapeHtml(m.preferredDates) : '') + (m.canHost ? ' \u00b7 <span class="host-tag">Can host</span>' : '') + '</p>' +
             '<p class="movie-reason">' + escapeHtml(m.reason) + '</p>' +
             '<div class="movie-actions">' +
               trailerHtml +
               lockActionHtml +
+              '<button type="button" class="linklike" data-action="edit" data-id="' + escapeHtml(m.id) + '">Edit</button>' +
+              '<button type="button" class="linklike linklike-danger" data-action="delete" data-id="' + escapeHtml(m.id) + '">Delete</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -829,9 +848,115 @@
         description: movie.reason || '',
         link: '',
         previewLink: movie.trailerLink,
-        note: '',
+        note: movie.canHost ? ('Hosted by ' + movie.submittedBy + ' \u00b7 ') : '',
         posterDataUrl: null
       }, { replaceExisting: true, sourceMovieId: movie.id });
+    });
+  }
+
+  // You can edit or delete a suggestion you filed yourself without a
+  // passcode. Anything else, including someone else's suggestion,
+  // still goes through the same organizer gate as the rest of the
+  // admin actions.
+  function canModifyMovie(movie){
+    return state.profile.isOrganizer ||
+      (state.profile.mySubmittedIds && state.profile.mySubmittedIds.indexOf(movie.id) !== -1);
+  }
+
+  function requireEditAccess(movie, onGranted){
+    if(canModifyMovie(movie)){ onGranted(); return; }
+    requireOrganizer(onGranted);
+  }
+
+  function openEditSuggestionModal(movie){
+    requireEditAccess(movie, function(){
+      openModal({
+        title: 'Edit suggestion',
+        submitLabel: 'Save changes',
+        bodyHtml:
+          '<div class="field"><label for="modal_e_name">Your name</label>' +
+          '<input id="modal_e_name" type="text" maxlength="40" value="' + escapeHtml(movie.submittedBy || '') + '" required /></div>' +
+          '<div class="field"><label for="modal_e_title">Film title</label>' +
+          '<input id="modal_e_title" type="text" maxlength="140" value="' + escapeHtml(movie.title || '') + '" required /></div>' +
+          '<div class="field"><label for="modal_e_year">Year <span class="field-hint">(optional, if you remember it)</span></label>' +
+          '<input id="modal_e_year" type="text" inputmode="numeric" maxlength="4" value="' + escapeHtml(movie.year || '') + '" /></div>' +
+          '<div class="field"><label for="modal_e_link">Trailer or preview link</label>' +
+          '<input id="modal_e_link" type="text" value="' + escapeHtml(movie.trailerLink || '') + '" required /></div>' +
+          '<div class="field"><label for="modal_e_reason">Why should we watch it? <span class="field-hint">(20 to 100 words)</span></label>' +
+          '<textarea id="modal_e_reason" rows="4" required>' + escapeHtml(movie.reason || '') + '</textarea>' +
+          '<p id="modal_e_wordcount" class="word-count" aria-live="polite">0 words</p></div>' +
+          '<div class="field"><label for="modal_e_dates">Preferred date(s) <span class="field-hint">(optional)</span></label>' +
+          '<input id="modal_e_dates" type="text" value="' + escapeHtml(movie.preferredDates || '') + '" /></div>' +
+          '<div class="checkbox-field"><input type="checkbox" id="modal_e_canhost"' + (movie.canHost ? ' checked' : '') + ' />' +
+          '<label for="modal_e_canhost">I can host this one at mine</label></div>',
+        onMount: function(form){
+          var reasonEl = form.querySelector('#modal_e_reason');
+          var wcEl = form.querySelector('#modal_e_wordcount');
+          function updateWc(){
+            var n = wordsIn(reasonEl.value).length;
+            wcEl.textContent = n + (n === 1 ? ' word' : ' words');
+            wcEl.classList.remove('is-good','is-bad');
+            if(n > 0){
+              if(n < 20 || n > 100) wcEl.classList.add('is-bad');
+              else wcEl.classList.add('is-good');
+            }
+          }
+          reasonEl.addEventListener('input', updateWc);
+          updateWc();
+        },
+        onSubmit: async function(form){
+          var name = form.querySelector('#modal_e_name').value.trim();
+          var title = form.querySelector('#modal_e_title').value.trim();
+          var year = form.querySelector('#modal_e_year').value.trim();
+          var link = form.querySelector('#modal_e_link').value.trim();
+          var reason = form.querySelector('#modal_e_reason').value.trim();
+          var dates = form.querySelector('#modal_e_dates').value.trim();
+          var canHost = form.querySelector('#modal_e_canhost').checked;
+          var words = wordsIn(reason);
+
+          if(!name) return { error: 'Add a name so we know who to credit.' };
+          if(!title) return { error: 'Add the film title.' };
+          if(year && !/^\d{4}$/.test(year)) return { error: 'If you add a year, make it 4 digits, like 1984.' };
+          if(!isSafeUrl(link)) return { error: 'Add a trailer or preview link starting with http:// or https://' };
+          if(words.length < 20) return { error: 'That is ' + words.length + ' words. Give us at least 20.' };
+          if(words.length > 100) return { error: 'That is ' + words.length + ' words. Trim it to 100 or fewer.' };
+
+          var latest = await safeGet(MOVIES_KEY, true);
+          if(latest) state.movies = latest;
+          var target = state.movies.find(function(m){ return m.id === movie.id; });
+          if(!target) return { error: 'This suggestion is gone, it may have already been removed.' };
+
+          target.submittedBy = name;
+          target.title = title;
+          target.year = year;
+          target.trailerLink = link;
+          target.reason = reason;
+          target.preferredDates = dates;
+          target.canHost = canHost;
+
+          await safeSet(MOVIES_KEY, state.movies, true);
+          renderAll();
+        }
+      });
+    });
+  }
+
+  function openDeleteSuggestionModal(movie){
+    requireEditAccess(movie, function(){
+      openModal({
+        title: 'Delete suggestion',
+        submitLabel: 'Yes, delete it',
+        dangerSubmit: true,
+        bodyHtml:
+          '<p style="margin:0;font-size:14px;color:var(--ink);">Remove "' + escapeHtml(movie.title) + '" and its votes? There is no undo.</p>',
+        onSubmit: async function(){
+          var latest = await safeGet(MOVIES_KEY, true);
+          if(latest) state.movies = latest;
+          state.movies = state.movies.filter(function(m){ return m.id !== movie.id; });
+          await safeSet(MOVIES_KEY, state.movies, true);
+          renderAll();
+        }
+      });
     });
   }
 
@@ -853,7 +978,9 @@
         '<textarea id="modal_s_reason" rows="4" placeholder="Make the pitch." required></textarea>' +
         '<p id="modal_s_wordcount" class="word-count" aria-live="polite">0 words</p></div>' +
         '<div class="field"><label for="modal_s_dates">Preferred date(s) <span class="field-hint">(optional)</span></label>' +
-        '<input id="modal_s_dates" type="text" placeholder="e.g. any Thursday, or Aug 20 to 22" /></div>',
+        '<input id="modal_s_dates" type="text" placeholder="e.g. any Thursday, or Aug 20 to 22" /></div>' +
+        '<div class="checkbox-field"><input type="checkbox" id="modal_s_canhost" />' +
+        '<label for="modal_s_canhost">I can host this one at mine</label></div>',
       onMount: function(form){
         var reasonEl = form.querySelector('#modal_s_reason');
         var wcEl = form.querySelector('#modal_s_wordcount');
@@ -875,6 +1002,7 @@
         var link = form.querySelector('#modal_s_link').value.trim();
         var reason = form.querySelector('#modal_s_reason').value.trim();
         var dates = form.querySelector('#modal_s_dates').value.trim();
+        var canHost = form.querySelector('#modal_s_canhost').checked;
         var words = wordsIn(reason);
 
         if(!name) return { error: 'Add your name so we know who to credit.' };
@@ -891,6 +1019,7 @@
           trailerLink: link,
           reason: reason,
           preferredDates: dates,
+          canHost: canHost,
           submittedBy: name,
           submittedAt: Date.now(),
           votes: 0,
@@ -898,6 +1027,7 @@
         };
 
         state.profile.name = name;
+        state.profile.mySubmittedIds.push(movie.id);
         await safeSet(PROFILE_KEY, state.profile, false);
 
         var latest = await safeGet(MOVIES_KEY, true);
@@ -943,7 +1073,8 @@
     ]);
     state.movies = results[0] || [];
     state.history = results[2] || [];
-    state.profile = results[3] || { name:'', votedIds: [], isOrganizer: false };
+    state.profile = results[3] || { name:'', votedIds: [], isOrganizer: false, mySubmittedIds: [] };
+    if(!state.profile.mySubmittedIds) state.profile.mySubmittedIds = [];
     if(results[1]){
       state.nextScreening = results[1];
     } else {
@@ -993,6 +1124,14 @@
       if(btn.dataset.action === 'lock'){
         var movie = state.movies.find(function(m){ return m.id === id; });
         if(movie) lockInAsNextScreening(movie);
+      }
+      if(btn.dataset.action === 'edit'){
+        var toEdit = state.movies.find(function(m){ return m.id === id; });
+        if(toEdit) openEditSuggestionModal(toEdit);
+      }
+      if(btn.dataset.action === 'delete'){
+        var toDelete = state.movies.find(function(m){ return m.id === id; });
+        if(toDelete) openDeleteSuggestionModal(toDelete);
       }
     });
   }
