@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NeuKin Film Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#faf9f6;
+    --surface:#ffffff;
+    --surface-2:#f1efea;
+    --border:#e2dfd7;
+    --ink:#1a1917;
+    --ink-muted:#726c61;
+    --accent:#2f4a3c;
+    --accent-hover:#25392e;
+    --accent-ink:#f6f7f4;
+    --accent-soft:#e8ede8;
+    --danger:#a8402f;
+    --danger-soft:#f5e2dd;
+    --radius-s:8px;
+    --radius-m:12px;
+    --radius-l:18px;
+    --shadow-soft:0 16px 32px -20px rgba(26,25,23,.22);
+    --font-display:'Fraunces', Georgia, serif;
+    --font-body:'Inter', system-ui, sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .frame{max-width:760px;margin:0 auto;padding:0 24px 100px;}
+  a{color:inherit;}
+  button{font:inherit;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  [hidden]{display:none !important;}
+
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  .eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted);margin:0 0 8px;}
+
+  /* header */
+  .site-header{margin-top:8px;text-align:center;animation:fadeInUp .6s ease both;}
+  .club-name{font-family:var(--font-display);font-weight:600;font-size:clamp(32px,7vw,48px);margin:0 0 8px;letter-spacing:-.01em;color:var(--ink);}
+  .club-name-italic{font-style:italic;font-weight:500;color:var(--accent);}
+  .tagline{color:var(--ink-muted);margin:0;font-size:15px;max-width:44ch;margin-inline:auto;}
+
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;border-radius:999px;border:1px solid transparent;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease, border-color .15s ease;white-space:nowrap;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn--marquee{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+  .btn--marquee:hover{background:var(--accent-hover);border-color:var(--accent-hover);box-shadow:0 10px 22px -12px rgba(47,74,60,.5);}
+  .btn--ghost{background:transparent;color:var(--ink);border-color:var(--border);}
+  .btn--ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn--full{width:100%;}
+  .btn--small{padding:7px 14px;font-size:12.5px;}
+  .btn--danger{background:var(--danger);color:var(--accent-ink);border-color:var(--danger);}
+  .btn--danger:hover{background:#8f3527;border-color:#8f3527;}
+  .icon-btn{background:transparent;border:1px solid var(--border);color:var(--ink-muted);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;transition:border-color .15s ease, color .15s ease;}
+  .icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .linklike{background:none;border:none;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer;font-family:inherit;font-size:inherit;}
+
+  /* hero */
+  .hero-ticket{margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-l);overflow:hidden;box-shadow:var(--shadow-soft);animation:fadeInUp .7s .08s ease both;}
+  .hero-inner{padding:26px;}
+  .hero-inner.has-poster{display:flex;gap:18px;align-items:flex-start;}
+  .hero-content{flex:1;min-width:0;}
+  .hero-poster{width:88px;height:132px;object-fit:cover;border-radius:8px;flex:0 0 auto;border:1px solid var(--border);background:var(--surface-2);}
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .eyebrow--onhero{color:var(--accent);}
+  .hero-title{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,5vw,34px);margin:8px 0 6px;color:var(--ink);}
+  .hero-credits{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-muted);margin:0 0 10px;}
+  .hero-description{font-family:var(--font-body);color:var(--ink);font-size:14.5px;line-height:1.55;margin:0 0 14px;opacity:.88;max-width:52ch;}
+  .hero-meta{color:var(--ink-muted);margin:0 0 18px;font-size:13.5px;font-family:var(--font-mono);}
+  .hero-actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+  /* bridge copy between Up Next and the suggestion flow */
+  .flow-intro{margin-top:32px;max-width:56ch;}
+  .flow-intro-text{color:var(--ink-muted);font-size:14.5px;margin:0;line-height:1.6;}
+
+  /* shared form field styles, used inside modals */
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-muted);margin-bottom:6px;}
+  .field-hint{text-transform:none;letter-spacing:0;font-weight:400;opacity:.85;}
+  input[type=text], input[type=password], textarea{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:var(--radius-s);
+    padding:10px 12px;
+    font-family:var(--font-body);
+    font-size:14.5px;
+    color:var(--ink);
+  }
+  textarea{resize:vertical;min-height:88px;}
+  .word-count{font-family:var(--font-mono);font-size:12px;color:var(--ink-muted);margin:6px 2px 0;text-align:right;}
+  .word-count.is-good{color:var(--accent);}
+  .word-count.is-bad{color:var(--danger);}
+
+  /* suggestions list */
+  .suggestions{margin-top:24px;}
+  .suggestions-header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .suggestions-header h2{font-family:var(--font-display);font-size:22px;margin:0;font-weight:600;color:var(--ink);}
+  .voting-as{font-size:13px;color:var(--ink-muted);margin:0;font-family:var(--font-mono);}
+  .movie-list{display:flex;flex-direction:column;gap:14px;}
+  .movie-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-m);padding:16px 18px;transition:transform .15s ease, border-color .15s ease;}
+  .movie-card:hover{transform:translateY(-1px);border-color:#cfcabe;}
+  .movie-card.is-leading{border-color:var(--accent);background:var(--accent-soft);}
+  .leading-badge{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;font-weight:600;}
+  .movie-card-main{display:flex;gap:14px;}
+  .vote-btn{flex:0 0 auto;width:52px;height:52px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);color:var(--ink-muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:transform .1s ease, background .15s ease, border-color .15s ease, color .15s ease;}
+  .vote-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .vote-btn:active{transform:scale(.94);}
+  .vote-btn.is-voted{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .vote-arrow{font-size:12px;line-height:1;}
+  .vote-count{font-family:var(--font-mono);font-size:15px;font-weight:600;}
+  .movie-body{flex:1;min-width:0;}
+  .movie-title{font-family:var(--font-display);font-size:19px;margin:0 0 4px;font-weight:600;color:var(--ink);}
+  .movie-year{color:var(--ink-muted);font-weight:400;font-size:.85em;}
+  .movie-meta{font-family:var(--font-mono);font-size:12px;color:var(--ink-muted);margin:0 0 8px;}
+  .movie-reason{margin:0 0 10px;font-size:14.5px;color:var(--ink);opacity:.85;}
+  .movie-actions{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;row-gap:6px;}
+  .empty-state{color:var(--ink-muted);font-size:14px;padding:22px;text-align:center;border:1px dashed var(--border);border-radius:var(--radius-m);background:var(--surface-2);}
+
+  /* history */
+  .history-section{margin-top:28px;}
+  .history-toggle{font-family:var(--font-mono);font-size:13px;color:var(--ink-muted);}
+  .history-toggle:hover{color:var(--accent);}
+  .history-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+  .history-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface-2);border-radius:var(--radius-s);font-size:13.5px;color:var(--ink-muted);flex-wrap:wrap;}
+  .history-title{color:var(--ink);}
+  .history-note{font-family:var(--font-mono);font-size:12px;margin-left:auto;}
+  .history-thumb{width:28px;height:42px;object-fit:cover;border-radius:4px;flex:0 0 auto;border:1px solid var(--border);}
+
+  /* footer */
+  .site-footer{margin-top:48px;text-align:center;}
+  .site-footer p{color:var(--ink-muted);font-size:13px;margin:14px 0 0;}
+
+  /* floating action button */
+  .fab{
+    position:fixed;
+    right:20px;
+    bottom:max(20px, env(safe-area-inset-bottom));
+    z-index:30;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:14px 22px 14px 18px;
+    border-radius:999px;
+    background:var(--accent);
+    color:var(--accent-ink);
+    border:none;
+    font-family:var(--font-body);
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:0 14px 28px -12px rgba(47,74,60,.5);
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .fab:hover{transform:translateY(-2px);background:var(--accent-hover);}
+  .fab:active{transform:translateY(0) scale(.97);}
+  .fab-icon{font-size:18px;line-height:1;font-weight:700;}
+
+  /* modal */
+  .modal-root{position:fixed;inset:0;z-index:50;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(23,21,18,.4);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modal-card{position:relative;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;background:var(--surface);color:var(--ink);border-radius:var(--radius-m);padding:26px 24px;box-shadow:var(--shadow-soft);border:1px solid var(--border);animation:fadeInUp .25s ease both;}
+  .modal-title{font-family:var(--font-display);font-size:20px;margin:0 0 16px;padding-right:24px;font-weight:600;color:var(--ink);}
+  .modal-close{position:absolute;top:14px;right:14px;border-color:var(--border);color:var(--ink-muted);}
+  .modal-close:hover{border-color:var(--danger);color:var(--danger);}
+  .modal-error{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger);padding:8px 10px;border-radius:var(--radius-s);font-size:13px;margin:0 0 14px;}
+  .poster-upload-row{display:flex;gap:12px;align-items:flex-start;}
+  .poster-preview{width:64px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--border);flex:0 0 auto;background:var(--surface-2);}
+  .poster-preview.is-empty{display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9.5px;color:var(--ink-muted);text-align:center;line-height:1.3;padding:4px;}
+  input[type=file]{font-family:var(--font-body);font-size:12.5px;color:var(--ink-muted);max-width:180px;}
+
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+  }
+
+  @media (max-width:600px){
+    .frame{padding:0 16px 100px;}
+    .movie-card-main{gap:10px;}
+    .vote-btn{width:44px;height:44px;}
+    .suggestions-header{flex-direction:column;align-items:flex-start;}
+    .hero-poster{width:64px;height:96px;}
+    .fab{right:16px;padding:13px 20px 13px 16px;}
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="site-header">
+    <p class="eyebrow">Berlin &middot; every couple of weeks</p>
+    <h1 class="club-name">NeuKin <span class="club-name-italic">Film Club</span></h1>
+    <p class="tagline">Cosy indie and arthouse screenings, plus the odd well loved commercial pick.</p>
+  </header>
+
+  <main>
+    <section class="hero-ticket" aria-labelledby="heroTitle">
+      <div class="hero-inner" id="heroInner">
+        <img id="heroPoster" class="hero-poster" alt="" hidden />
+        <div class="hero-content">
+          <div class="hero-top">
+            <p class="eyebrow eyebrow--onhero">Up next</p>
+            <button id="editNextBtn" type="button" class="icon-btn" title="Edit next screening" aria-label="Edit next screening">&#9998;</button>
+          </div>
+          <h2 id="heroTitle" class="hero-title">Loading&hellip;</h2>
+          <p id="heroCredits" class="hero-credits" hidden></p>
+          <p id="heroDescription" class="hero-description" hidden></p>
+          <p id="heroMeta" class="hero-meta"></p>
+          <div class="hero-actions">
+            <a id="heroRsvp" class="btn btn--marquee" href="#" target="_blank" rel="noopener" hidden>RSVP</a>
+            <a id="heroPreview" class="btn btn--ghost" href="#" target="_blank" rel="noopener" hidden>Watch preview</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="flow-intro">
+      <p class="flow-intro-text">Every couple of weeks the club votes on what to watch. Vote for your favourites below, or tap the plus button to pitch your own. The one in the lead is marked in the list.</p>
+    </section>
+
+    <section class="suggestions">
+      <div class="suggestions-header">
+        <h2>All suggestions</h2>
+        <p class="voting-as">Voting as <strong id="voterName">a mystery guest</strong> &middot; <button id="changeNameBtn" type="button" class="linklike">change</button></p>
+      </div>
+      <div id="movieList" class="movie-list">
+        <p class="empty-state">Loading suggestions&hellip;</p>
+      </div>
+    </section>
+
+    <section class="history-section">
+      <button id="historyToggle" type="button" class="linklike history-toggle" hidden>&#9656; Previously screened</button>
+      <div id="historyList" class="history-list" hidden></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Hosted by Prateek in Neuk&ouml;lln. Drinks and snacks always welcome.</p>
+    <p><button type="button" id="resetDataBtn" class="linklike" style="font-size:11.5px;opacity:.6;">Reset test data</button></p>
+  </footer>
+</div>
+
+<button id="suggestFab" type="button" class="fab" aria-label="Suggest a film">
+  <span class="fab-icon" aria-hidden="true">&#43;</span>
+  <span>Suggest a film</span>
+</button>
+
+<div id="modalRoot" class="modal-root" hidden></div>
+
+<script>
+(function(){
+  'use strict';
+
+  var MOVIES_KEY = 'neukin_movies';
+  var NEXT_KEY = 'neukin_next_screening';
+  var HISTORY_KEY = 'neukin_history';
+  var PROFILE_KEY = 'neukin_profile';
+
+  // Change this to whatever passcode you want. Anyone who knows it can edit
+  // the "Up next" screening. It's a soft gate for casual use, not real
+  // security: this file's code is viewable/copyable by anyone with the
+  // published link, so treat it like a shared house key, not a lock.
+  var ORGANIZER_PASSCODE = 'haddanhad';
+
+  var DEFAULT_NEXT_SCREENING = {
+    title: 'Hadd Anhad',
+    year: '2009',
+    director: 'Shabnam Virmani',
+    duration: '103 min',
+    description: 'Shabnam Virmani\u2019s documentary follows the 15th-century mystic poet Kabir\u2019s songs through India and Pakistan, asking who his Ram really was: a question that still cuts across religious lines today.',
+    link: 'https://luma.com/olz3clyx',
+    previewLink: 'https://www.instagram.com/reel/DSXplcWCV-j',
+    note: 'Thu 13 Aug \u00b7 Berlin \u00b7 hosted by Prateek',
+    posterDataUrl: null,
+    setAt: Date.now()
+  };
+
+  var state = {
+    movies: [],
+    nextScreening: null,
+    history: [],
+    profile: { name: '', votedIds: [], isOrganizer: false }
+  };
+
+  var memoryFallback = {};
+
+  // Guards against window.storage silently hanging (e.g. on an artifact
+  // that hasn't been published yet, storage calls can stall rather than
+  // fail fast). If it doesn't settle within STORAGE_TIMEOUT_MS, treat it
+  // as unavailable and fall back to the in-memory store instead of
+  // leaving the UI stuck waiting forever.
+  var STORAGE_TIMEOUT_MS = 2500;
+  function withTimeout(promise, ms){
+    return new Promise(function(resolve, reject){
+      var settled = false;
+      var timer = setTimeout(function(){
+        if(settled) return;
+        settled = true;
+        reject(new Error('storage timed out'));
+      }, ms);
+      promise.then(
+        function(v){ if(settled) return; settled = true; clearTimeout(timer); resolve(v); },
+        function(e){ if(settled) return; settled = true; clearTimeout(timer); reject(e); }
+      );
+    });
+  }
+
+  // Leave this blank while testing inside Claude, it isn't needed here.
+  // Once you deploy the companion Apps Script (see neukin-apps-script.gs)
+  // as a web app, paste its /exec URL below. That's what makes storage
+  // work when this file is hosted somewhere outside Claude, e.g. GitHub
+  // Pages, since window.storage only exists inside Claude's own runtime.
+  var BACKEND_URL = 'script.google.com/macros/s/AKfycbyPkbNCAelmgCbiD4PWzRYKZp-ygaibOPoPY7UmV5KWAzibnsdaCEjZGPBVgCmzyivV/exec';
+
+  function getVisitorId(){
+    try{
+      var existing = window.localStorage.getItem('neukin_visitor_id');
+      if(existing) return existing;
+      var id = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+      window.localStorage.setItem('neukin_visitor_id', id);
+      return id;
+    }catch(e){
+      // localStorage unavailable for some reason, fall back to a
+      // per-page-load id so voting still works within this one visit.
+      if(!window.__neukinVisitorFallback){
+        window.__neukinVisitorFallback = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+      }
+      return window.__neukinVisitorFallback;
+    }
+  }
+
+  async function backendGet(key, shared){
+    var params = 'action=get&key=' + encodeURIComponent(key) + '&shared=' + (shared ? '1' : '0');
+    if(!shared) params += '&visitor=' + encodeURIComponent(getVisitorId());
+    var res = await fetch(BACKEND_URL + '?' + params);
+    var data = await res.json();
+    if(!data || !data.ok) throw new Error((data && data.error) || 'backend get failed');
+    return (data.value === '' || data.value == null) ? null : JSON.parse(data.value);
+  }
+
+  async function backendSet(key, value, shared){
+    var payload = {
+      action: 'set',
+      key: key,
+      value: JSON.stringify(value),
+      shared: shared ? '1' : '0',
+      visitor: shared ? '' : getVisitorId()
+    };
+    // text/plain sidesteps the CORS preflight Apps Script doesn't handle;
+    // the server parses the JSON out of the raw request body itself.
+    var res = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json();
+    return !!(data && data.ok);
+  }
+
+  async function safeGet(key, shared){
+    try{
+      if(window.storage && window.storage.get){
+        var res = await withTimeout(window.storage.get(key, shared), STORAGE_TIMEOUT_MS);
+        return res ? JSON.parse(res.value) : null;
+      }
+    }catch(e){ /* key not found, storage unavailable, or timed out, fall through */ }
+    if(BACKEND_URL){
+      try{
+        return await withTimeout(backendGet(key, shared), STORAGE_TIMEOUT_MS);
+      }catch(e){ console.error('backend get failed', key, e); }
+    }
+    var fbKey = (shared ? 'shared:' : 'priv:') + key;
+    return Object.prototype.hasOwnProperty.call(memoryFallback, fbKey) ? memoryFallback[fbKey] : null;
+  }
+
+  async function safeSet(key, value, shared){
+    try{
+      if(window.storage && window.storage.set){
+        var res = await withTimeout(window.storage.set(key, JSON.stringify(value), shared), STORAGE_TIMEOUT_MS);
+        if(res) return true;
+      }
+    }catch(e){ console.error('storage set failed or timed out', key, e); }
+    if(BACKEND_URL){
+      try{
+        var ok = await withTimeout(backendSet(key, value, shared), STORAGE_TIMEOUT_MS);
+        if(ok) return true;
+      }catch(e){ console.error('backend set failed', key, e); }
+    }
+    var fbKey = (shared ? 'shared:' : 'priv:') + key;
+    memoryFallback[fbKey] = value;
+    return true;
+  }
+
+  function escapeHtml(str){
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function isSafeUrl(url){
+    return typeof url === 'string' && /^https?:\/\//i.test(url.trim());
+  }
+
+  function wordsIn(text){
+    return text.trim().split(/\s+/).filter(Boolean);
+  }
+
+  function resizeImageFile(file, maxDim, quality){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onerror = function(){ reject(new Error('read failed')); };
+      reader.onload = function(){
+        var img = new Image();
+        img.onerror = function(){ reject(new Error('decode failed')); };
+        img.onload = function(){
+          var w = img.width, h = img.height;
+          if(w >= h && w > maxDim){ h = Math.round(h * (maxDim / w)); w = maxDim; }
+          else if(h > w && h > maxDim){ w = Math.round(w * (maxDim / h)); h = maxDim; }
+          var canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          try{
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          }catch(err){ reject(err); }
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // DOM refs
+  var heroInnerEl = document.getElementById('heroInner');
+  var heroPosterEl = document.getElementById('heroPoster');
+  var heroTitleEl = document.getElementById('heroTitle');
+  var heroCreditsEl = document.getElementById('heroCredits');
+  var heroDescriptionEl = document.getElementById('heroDescription');
+  var heroMetaEl = document.getElementById('heroMeta');
+  var heroRsvpEl = document.getElementById('heroRsvp');
+  var heroPreviewEl = document.getElementById('heroPreview');
+  var editNextBtn = document.getElementById('editNextBtn');
+
+  var movieListEl = document.getElementById('movieList');
+  var voterNameEl = document.getElementById('voterName');
+  var changeNameBtn = document.getElementById('changeNameBtn');
+
+  var historyToggle = document.getElementById('historyToggle');
+  var historyList = document.getElementById('historyList');
+
+  var suggestFab = document.getElementById('suggestFab');
+  var resetDataBtn = document.getElementById('resetDataBtn');
+  var modalRoot = document.getElementById('modalRoot');
+
+  function updateVoterNameDisplay(){
+    voterNameEl.textContent = state.profile.name || 'a mystery guest';
+  }
+
+  function renderHero(){
+    var ns = state.nextScreening;
+    if(!ns){
+      heroTitleEl.textContent = 'Nothing locked in yet';
+      heroMetaEl.textContent = 'Vote on a suggestion below, then lock it in here.';
+      heroRsvpEl.hidden = true;
+      heroPreviewEl.hidden = true;
+      heroPosterEl.hidden = true;
+      heroCreditsEl.hidden = true;
+      heroDescriptionEl.hidden = true;
+      heroInnerEl.classList.remove('has-poster');
+      return;
+    }
+    heroTitleEl.textContent = ns.title + (ns.year ? ' (' + ns.year + ')' : '');
+    heroMetaEl.textContent = ns.note || '';
+    var creditsParts = [];
+    if(ns.director) creditsParts.push('Directed by ' + ns.director);
+    if(ns.duration) creditsParts.push(ns.duration);
+    if(creditsParts.length){
+      heroCreditsEl.textContent = creditsParts.join(' \u00b7 ');
+      heroCreditsEl.hidden = false;
+    } else {
+      heroCreditsEl.hidden = true;
+    }
+    if(ns.description){
+      heroDescriptionEl.textContent = ns.description;
+      heroDescriptionEl.hidden = false;
+    } else {
+      heroDescriptionEl.hidden = true;
+    }
+    if(ns.link && isSafeUrl(ns.link)){ heroRsvpEl.hidden = false; heroRsvpEl.href = ns.link; }
+    else heroRsvpEl.hidden = true;
+    if(ns.previewLink && isSafeUrl(ns.previewLink)){ heroPreviewEl.hidden = false; heroPreviewEl.href = ns.previewLink; }
+    else heroPreviewEl.hidden = true;
+    if(ns.posterDataUrl){
+      heroPosterEl.src = ns.posterDataUrl;
+      heroPosterEl.hidden = false;
+      heroInnerEl.classList.add('has-poster');
+    } else {
+      heroPosterEl.hidden = true;
+      heroPosterEl.removeAttribute('src');
+      heroInnerEl.classList.remove('has-poster');
+    }
+  }
+
+  function renderMovieCard(m, isLeading){
+    var voted = state.profile.votedIds.indexOf(m.id) !== -1;
+    var trailerHtml = isSafeUrl(m.trailerLink)
+      ? '<a class="linklike" href="' + escapeHtml(m.trailerLink) + '" target="_blank" rel="noopener">Watch preview &#8599;</a>'
+      : '';
+    var badgeHtml = isLeading ? '<p class="leading-badge">Leading the vote</p>' : '';
+    var lockActionHtml = isLeading
+      ? '<button type="button" class="btn btn--ghost btn--small" data-action="lock" data-id="' + escapeHtml(m.id) + '">Lock in as next screening</button>'
+      : '<button type="button" class="linklike" data-action="lock" data-id="' + escapeHtml(m.id) + '">Choose as next screening</button>';
+    var yearHtml = m.year ? ' <span class="movie-year">(' + escapeHtml(m.year) + ')</span>' : '';
+    return (
+      '<article class="movie-card' + (isLeading ? ' is-leading' : '') + '" data-id="' + escapeHtml(m.id) + '">' +
+        badgeHtml +
+        '<div class="movie-card-main">' +
+          '<button type="button" class="vote-btn' + (voted ? ' is-voted' : '') + '" data-action="vote" data-id="' + escapeHtml(m.id) + '" aria-pressed="' + voted + '" aria-label="Vote for ' + escapeHtml(m.title) + '">' +
+            '<span class="vote-arrow" aria-hidden="true">&#9650;</span>' +
+            '<span class="vote-count">' + m.votes + '</span>' +
+          '</button>' +
+          '<div class="movie-body">' +
+            '<h3 class="movie-title">' + escapeHtml(m.title) + yearHtml + '</h3>' +
+            '<p class="movie-meta">Suggested by ' + escapeHtml(m.submittedBy) + (m.preferredDates ? ' \u00b7 Prefers ' + escapeHtml(m.preferredDates) : '') + '</p>' +
+            '<p class="movie-reason">' + escapeHtml(m.reason) + '</p>' +
+            '<div class="movie-actions">' +
+              trailerHtml +
+              lockActionHtml +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</article>'
+    );
+  }
+
+  function renderMovieList(){
+    var active = state.movies
+      .filter(function(m){ return !m.scheduled; })
+      .sort(function(a,b){ return b.votes - a.votes || a.submittedAt - b.submittedAt; });
+    if(!active.length){
+      movieListEl.innerHTML = '<p class="empty-state">No suggestions yet. Be the first to pitch something, tap the plus button below.</p>';
+      return;
+    }
+    movieListEl.innerHTML = active.map(function(m, i){
+      return renderMovieCard(m, i === 0 && m.votes > 0);
+    }).join('');
+  }
+
+  function renderHistory(){
+    if(!state.history.length){
+      historyToggle.hidden = true;
+      historyList.hidden = true;
+      return;
+    }
+    historyToggle.hidden = false;
+    historyToggle.innerHTML = (historyList.hidden ? '&#9656; ' : '&#9662; ') + 'Previously screened (' + state.history.length + ')';
+    historyList.innerHTML = state.history.map(function(h){
+      var titleHtml = (h.link && isSafeUrl(h.link))
+        ? '<a href="' + escapeHtml(h.link) + '" target="_blank" rel="noopener">' + escapeHtml(h.title) + ' (' + escapeHtml(h.year) + ')</a>'
+        : escapeHtml(h.title) + ' (' + escapeHtml(h.year) + ')';
+      var thumbHtml = h.posterDataUrl ? '<img class="history-thumb" alt="" src="' + h.posterDataUrl + '" />' : '';
+      return '<div class="history-item">' + thumbHtml + '<span class="history-title">' + titleHtml + '</span>' + (h.note ? '<span class="history-note">' + escapeHtml(h.note) + '</span>' : '') + '</div>';
+    }).join('');
+  }
+
+  function renderAll(){
+    renderHero();
+    renderMovieList();
+    renderHistory();
+    updateVoterNameDisplay();
+  }
+
+  // ---- Modal (generic shell: bodyHtml + onMount + onSubmit) ----
+  function onModalRootClick(e){
+    var action = e.target && e.target.dataset ? e.target.dataset.action : null;
+    if(action === 'close' || action === 'close-overlay') closeModal();
+  }
+  function onModalKeydown(e){
+    if(e.key === 'Escape') closeModal();
+  }
+  function closeModal(){
+    modalRoot.hidden = true;
+    modalRoot.innerHTML = '';
+    modalRoot.removeEventListener('click', onModalRootClick);
+    document.removeEventListener('keydown', onModalKeydown);
+  }
+  function setModalError(msg){
+    var el = modalRoot.querySelector('.modal-error');
+    if(!el) return;
+    if(msg){ el.textContent = msg; el.hidden = false; }
+    else { el.hidden = true; el.textContent = ''; }
+  }
+  var modalToken = 0;
+  function openModal(cfg){
+    modalToken++;
+    var myToken = modalToken;
+    modalRoot.hidden = false;
+    modalRoot.innerHTML =
+      '<div class="modal-overlay" data-action="close-overlay">' +
+        '<div class="modal-card" role="dialog" aria-modal="true" aria-label="' + escapeHtml(cfg.title) + '">' +
+          '<button type="button" class="icon-btn modal-close" data-action="close" aria-label="Close">&times;</button>' +
+          '<h3 class="modal-title">' + escapeHtml(cfg.title) + '</h3>' +
+          '<p class="modal-error" hidden></p>' +
+          '<form id="modalForm" novalidate>' +
+            cfg.bodyHtml +
+            '<button type="submit" class="btn ' + (cfg.dangerSubmit ? 'btn--danger' : 'btn--marquee') + ' btn--full">' + escapeHtml(cfg.submitLabel || 'Save') + '</button>' +
+          '</form>' +
+        '</div>' +
+      '</div>';
+    var form = document.getElementById('modalForm');
+    if(cfg.onMount) cfg.onMount(form);
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      var result = await cfg.onSubmit(form);
+      // If a callback above already opened a NEW modal (e.g. a correct
+      // passcode chaining straight into the edit form), modalToken will
+      // have moved on. Don't close a modal that isn't ours anymore.
+      if(myToken !== modalToken) return;
+      if(result && result.error){
+        setModalError(result.error);
+      } else {
+        closeModal();
+      }
+    });
+    modalRoot.addEventListener('click', onModalRootClick);
+    document.addEventListener('keydown', onModalKeydown);
+    var firstInput = form.querySelector('input, textarea');
+    if(firstInput) firstInput.focus();
+  }
+
+  function openNameModal(onDone){
+    openModal({
+      title: 'What should we call you?',
+      submitLabel: 'Save',
+      bodyHtml:
+        '<div class="field"><label for="modal_name">Your name</label>' +
+        '<input id="modal_name" type="text" value="' + escapeHtml(state.profile.name || '') + '" required /></div>',
+      onSubmit: async function(form){
+        var name = form.querySelector('#modal_name').value.trim();
+        if(!name) return { error: 'Enter a name.' };
+        state.profile.name = name;
+        await safeSet(PROFILE_KEY, state.profile, false);
+        updateVoterNameDisplay();
+        if(onDone) onDone();
+      }
+    });
+  }
+
+  function openOrganizerModal(onUnlocked){
+    openModal({
+      title: 'Organizer access',
+      submitLabel: 'Unlock',
+      bodyHtml:
+        '<p style="margin:0 0 14px;font-size:13.5px;color:var(--ink-muted);">This part is managed by the host. Enter the passcode to continue.</p>' +
+        '<div class="field"><label for="modal_passcode">Passcode</label>' +
+        '<input id="modal_passcode" type="password" required /></div>',
+      onSubmit: async function(form){
+        var val = form.querySelector('#modal_passcode').value;
+        if(val !== ORGANIZER_PASSCODE) return { error: "That's not right, try again." };
+        state.profile.isOrganizer = true;
+        await safeSet(PROFILE_KEY, state.profile, false);
+        if(onUnlocked) onUnlocked();
+      }
+    });
+  }
+
+  function requireOrganizer(onUnlocked){
+    if(state.profile.isOrganizer){ onUnlocked(); return; }
+    openOrganizerModal(onUnlocked);
+  }
+
+  function openNextScreeningModal(prefill, options){
+    var pendingPoster = prefill.posterDataUrl || null;
+
+    function bodyHtml(){
+      return (
+        '<div class="field"><label for="modal_title">Film title</label>' +
+        '<input id="modal_title" type="text" value="' + escapeHtml(prefill.title || '') + '" required /></div>' +
+        '<div class="field"><label for="modal_year">Year</label>' +
+        '<input id="modal_year" type="text" value="' + escapeHtml(prefill.year || '') + '" required /></div>' +
+        '<div class="field"><label for="modal_director">Director <span class="field-hint">(optional)</span></label>' +
+        '<input id="modal_director" type="text" value="' + escapeHtml(prefill.director || '') + '" placeholder="e.g. Shabnam Virmani" /></div>' +
+        '<div class="field"><label for="modal_duration">Duration <span class="field-hint">(optional)</span></label>' +
+        '<input id="modal_duration" type="text" value="' + escapeHtml(prefill.duration || '') + '" placeholder="e.g. 103 min" /></div>' +
+        '<div class="field"><label for="modal_description">Description <span class="field-hint">(optional)</span></label>' +
+        '<textarea id="modal_description" rows="3" placeholder="What is it about? A sentence or two.">' + escapeHtml(prefill.description || '') + '</textarea></div>' +
+        '<div class="field"><label for="modal_link">RSVP or event link</label>' +
+        '<input id="modal_link" type="text" value="' + escapeHtml(prefill.link || '') + '" placeholder="https://luma.com/..." /></div>' +
+        '<div class="field"><label for="modal_previewLink">Trailer or preview link</label>' +
+        '<input id="modal_previewLink" type="text" value="' + escapeHtml(prefill.previewLink || '') + '" placeholder="https://..." /></div>' +
+        '<div class="field"><label for="modal_note">Date, time, or place</label>' +
+        '<input id="modal_note" type="text" value="' + escapeHtml(prefill.note || '') + '" placeholder="e.g. Thu 27 Aug, Neuk\u00f6lln" /></div>' +
+        '<div class="field"><label>Poster (optional)</label>' +
+        '<div class="poster-upload-row">' +
+          '<div id="posterPreviewWrap"></div>' +
+          '<div><input type="file" id="posterFile" accept="image/*" />' +
+          '<div style="margin-top:6px;"><button type="button" class="linklike" id="removePosterBtn" hidden>Remove poster</button></div></div>' +
+        '</div></div>'
+      );
+    }
+
+    function refreshPreview(form){
+      var wrap = form.querySelector('#posterPreviewWrap');
+      var removeBtn = form.querySelector('#removePosterBtn');
+      if(pendingPoster){
+        wrap.innerHTML = '<img class="poster-preview" alt="" src="' + pendingPoster + '" />';
+        removeBtn.hidden = false;
+      } else {
+        wrap.innerHTML = '<div class="poster-preview is-empty">No poster</div>';
+        removeBtn.hidden = true;
+      }
+    }
+
+    openModal({
+      title: options.replaceExisting ? 'Lock in the next screening' : 'Edit next screening',
+      submitLabel: options.replaceExisting ? 'Lock it in' : 'Save changes',
+      bodyHtml: bodyHtml(),
+      onMount: function(form){
+        refreshPreview(form);
+        form.querySelector('#posterFile').addEventListener('change', async function(e){
+          var file = e.target.files && e.target.files[0];
+          if(!file) return;
+          if(!file.type || file.type.indexOf('image/') !== 0){ setModalError('Please choose an image file.'); return; }
+          if(file.size > 15 * 1024 * 1024){ setModalError('That image is too large. Try one under 15MB.'); return; }
+          try{
+            pendingPoster = await resizeImageFile(file, 640, 0.82);
+            setModalError('');
+            refreshPreview(form);
+          }catch(err){
+            setModalError('Could not read that image, try a different file.');
+          }
+        });
+        form.querySelector('#removePosterBtn').addEventListener('click', function(){
+          pendingPoster = null;
+          refreshPreview(form);
+        });
+      },
+      onSubmit: async function(form){
+        var title = form.querySelector('#modal_title').value.trim();
+        var year = form.querySelector('#modal_year').value.trim();
+        var director = form.querySelector('#modal_director').value.trim();
+        var duration = form.querySelector('#modal_duration').value.trim();
+        var description = form.querySelector('#modal_description').value.trim();
+        var link = form.querySelector('#modal_link').value.trim();
+        var previewLink = form.querySelector('#modal_previewLink').value.trim();
+        var note = form.querySelector('#modal_note').value.trim();
+        if(!title || !year) return { error: 'Add at least a title and year.' };
+        await saveNextScreening({
+          title: title, year: year, director: director, duration: duration, description: description,
+          link: link, previewLink: previewLink, note: note, posterDataUrl: pendingPoster
+        }, options);
+      }
+    });
+  }
+
+  async function saveNextScreening(values, options){
+    if(options.replaceExisting && state.nextScreening){
+      state.history = [state.nextScreening].concat(state.history);
+      await safeSet(HISTORY_KEY, state.history, true);
+    }
+    state.nextScreening = {
+      title: values.title.trim(),
+      year: values.year.trim(),
+      director: (values.director || '').trim(),
+      duration: (values.duration || '').trim(),
+      description: (values.description || '').trim(),
+      link: values.link.trim(),
+      previewLink: values.previewLink.trim(),
+      note: values.note.trim(),
+      posterDataUrl: values.posterDataUrl || null,
+      setAt: Date.now()
+    };
+    await safeSet(NEXT_KEY, state.nextScreening, true);
+    if(options.sourceMovieId){
+      var latest = await safeGet(MOVIES_KEY, true);
+      if(latest) state.movies = latest;
+      var m = state.movies.find(function(x){ return x.id === options.sourceMovieId; });
+      if(m) m.scheduled = true;
+      await safeSet(MOVIES_KEY, state.movies, true);
+    }
+    renderAll();
+  }
+
+  function openResetConfirmModal(){
+    openModal({
+      title: 'Reset test data',
+      submitLabel: 'Yes, clear everything',
+      dangerSubmit: true,
+      bodyHtml:
+        '<p style="margin:0 0 14px;font-size:14px;color:var(--ink);">This clears every suggestion, every vote, and the previously screened list, and puts Up Next back to Hadd Anhad.</p>' +
+        '<p style="margin:0;font-size:13px;color:var(--ink-muted);">There is no undo. Use this to clear out test entries before the club starts using the page for real, not after.</p>',
+      onSubmit: async function(){
+        state.movies = [];
+        state.history = [];
+        state.nextScreening = Object.assign({}, DEFAULT_NEXT_SCREENING, { setAt: Date.now() });
+        await Promise.all([
+          safeSet(MOVIES_KEY, state.movies, true),
+          safeSet(HISTORY_KEY, state.history, true),
+          safeSet(NEXT_KEY, state.nextScreening, true)
+        ]);
+        renderAll();
+      }
+    });
+  }
+
+  function lockInAsNextScreening(movie){
+    requireOrganizer(function(){
+      openNextScreeningModal({
+        title: movie.title,
+        year: movie.year,
+        director: '',
+        duration: '',
+        description: movie.reason || '',
+        link: '',
+        previewLink: movie.trailerLink,
+        note: '',
+        posterDataUrl: null
+      }, { replaceExisting: true, sourceMovieId: movie.id });
+    });
+  }
+
+  // ---- Suggest a film (modal, opened from the floating action button) ----
+  function openSuggestModal(){
+    openModal({
+      title: 'Suggest a film',
+      submitLabel: 'File this suggestion',
+      bodyHtml:
+        '<div class="field"><label for="modal_s_name">Your name</label>' +
+        '<input id="modal_s_name" type="text" maxlength="40" autocomplete="off" value="' + escapeHtml(state.profile.name || '') + '" required /></div>' +
+        '<div class="field"><label for="modal_s_title">Film title</label>' +
+        '<input id="modal_s_title" type="text" maxlength="140" placeholder="Paris, Texas" required /></div>' +
+        '<div class="field"><label for="modal_s_year">Year <span class="field-hint">(optional, if you remember it)</span></label>' +
+        '<input id="modal_s_year" type="text" inputmode="numeric" maxlength="4" placeholder="1984" /></div>' +
+        '<div class="field"><label for="modal_s_link">Trailer or preview link</label>' +
+        '<input id="modal_s_link" type="text" placeholder="https://" required /></div>' +
+        '<div class="field"><label for="modal_s_reason">Why should we watch it? <span class="field-hint">(20 to 100 words)</span></label>' +
+        '<textarea id="modal_s_reason" rows="4" placeholder="Make the pitch." required></textarea>' +
+        '<p id="modal_s_wordcount" class="word-count" aria-live="polite">0 words</p></div>' +
+        '<div class="field"><label for="modal_s_dates">Preferred date(s) <span class="field-hint">(optional)</span></label>' +
+        '<input id="modal_s_dates" type="text" placeholder="e.g. any Thursday, or Aug 20 to 22" /></div>',
+      onMount: function(form){
+        var reasonEl = form.querySelector('#modal_s_reason');
+        var wcEl = form.querySelector('#modal_s_wordcount');
+        function updateWc(){
+          var n = wordsIn(reasonEl.value).length;
+          wcEl.textContent = n + (n === 1 ? ' word' : ' words');
+          wcEl.classList.remove('is-good','is-bad');
+          if(n > 0){
+            if(n < 20 || n > 100) wcEl.classList.add('is-bad');
+            else wcEl.classList.add('is-good');
+          }
+        }
+        reasonEl.addEventListener('input', updateWc);
+      },
+      onSubmit: async function(form){
+        var name = form.querySelector('#modal_s_name').value.trim();
+        var title = form.querySelector('#modal_s_title').value.trim();
+        var year = form.querySelector('#modal_s_year').value.trim();
+        var link = form.querySelector('#modal_s_link').value.trim();
+        var reason = form.querySelector('#modal_s_reason').value.trim();
+        var dates = form.querySelector('#modal_s_dates').value.trim();
+        var words = wordsIn(reason);
+
+        if(!name) return { error: 'Add your name so we know who to credit.' };
+        if(!title) return { error: 'Add the film title.' };
+        if(year && !/^\d{4}$/.test(year)) return { error: 'If you add a year, make it 4 digits, like 1984.' };
+        if(!isSafeUrl(link)) return { error: 'Add a trailer or preview link starting with http:// or https://' };
+        if(words.length < 20) return { error: 'That is ' + words.length + ' words. Give us at least 20.' };
+        if(words.length > 100) return { error: 'That is ' + words.length + ' words. Trim it to 100 or fewer.' };
+
+        var movie = {
+          id: 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+          title: title,
+          year: year,
+          trailerLink: link,
+          reason: reason,
+          preferredDates: dates,
+          submittedBy: name,
+          submittedAt: Date.now(),
+          votes: 0,
+          scheduled: false
+        };
+
+        state.profile.name = name;
+        await safeSet(PROFILE_KEY, state.profile, false);
+
+        var latest = await safeGet(MOVIES_KEY, true);
+        state.movies = latest || state.movies;
+        state.movies.push(movie);
+        await safeSet(MOVIES_KEY, state.movies, true);
+
+        renderAll();
+      }
+    });
+  }
+
+  // ---- Voting ----
+  async function handleVoteClick(id){
+    if(!state.profile.name){
+      openNameModal(function(){ handleVoteClick(id); });
+      return;
+    }
+    var latest = await safeGet(MOVIES_KEY, true);
+    if(latest) state.movies = latest;
+    var movie = state.movies.find(function(m){ return m.id === id; });
+    if(!movie) return;
+    var idx = state.profile.votedIds.indexOf(id);
+    if(idx !== -1){
+      movie.votes = Math.max(0, movie.votes - 1);
+      state.profile.votedIds.splice(idx, 1);
+    } else {
+      movie.votes = (movie.votes || 0) + 1;
+      state.profile.votedIds.push(id);
+    }
+    await safeSet(MOVIES_KEY, state.movies, true);
+    await safeSet(PROFILE_KEY, state.profile, false);
+    renderAll();
+  }
+
+  // ---- Init & events ----
+  async function loadAll(){
+    var results = await Promise.all([
+      safeGet(MOVIES_KEY, true),
+      safeGet(NEXT_KEY, true),
+      safeGet(HISTORY_KEY, true),
+      safeGet(PROFILE_KEY, false)
+    ]);
+    state.movies = results[0] || [];
+    state.history = results[2] || [];
+    state.profile = results[3] || { name:'', votedIds: [], isOrganizer: false };
+    if(results[1]){
+      state.nextScreening = results[1];
+    } else {
+      state.nextScreening = DEFAULT_NEXT_SCREENING;
+      await safeSet(NEXT_KEY, state.nextScreening, true);
+    }
+  }
+
+  async function pollRefresh(){
+    var results = await Promise.all([
+      safeGet(MOVIES_KEY, true),
+      safeGet(NEXT_KEY, true),
+      safeGet(HISTORY_KEY, true)
+    ]);
+    if(results[0]) state.movies = results[0];
+    if(results[1]) state.nextScreening = results[1];
+    if(results[2]) state.history = results[2];
+    renderAll();
+  }
+
+  function wireEvents(){
+    suggestFab.addEventListener('click', function(){ openSuggestModal(); });
+
+    changeNameBtn.addEventListener('click', function(){ openNameModal(); });
+
+    editNextBtn.addEventListener('click', function(){
+      requireOrganizer(function(){
+        var ns = state.nextScreening || {};
+        openNextScreeningModal(ns, { replaceExisting: false });
+      });
+    });
+
+    historyToggle.addEventListener('click', function(){
+      historyList.hidden = !historyList.hidden;
+      renderHistory();
+    });
+
+    resetDataBtn.addEventListener('click', function(){
+      requireOrganizer(function(){ openResetConfirmModal(); });
+    });
+
+    movieListEl.addEventListener('click', function(e){
+      var btn = e.target.closest('[data-action]');
+      if(!btn) return;
+      var id = btn.dataset.id;
+      if(btn.dataset.action === 'vote') handleVoteClick(id);
+      if(btn.dataset.action === 'lock'){
+        var movie = state.movies.find(function(m){ return m.id === id; });
+        if(movie) lockInAsNextScreening(movie);
+      }
+    });
+  }
+
+  function init(){
+    // Wire everything up first so the page is clickable immediately,
+    // rather than sitting unresponsive until the initial storage read
+    // resolves (which can take a couple of seconds if storage isn't
+    // available yet, e.g. the artifact hasn't been published).
+    wireEvents();
+    loadAll().then(function(){
+      renderAll();
+      setInterval(pollRefresh, 20000);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
